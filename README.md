@@ -45,65 +45,65 @@ The system was designed to solve the core limitations of traditional CCTV monito
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        VIDEO INPUT LAYER                            │
-│   Uploaded File (MP4/AVI/MOV/MKV) ──► FFmpeg Transcode ──► H.264   │
+│   Uploaded File (MP4/AVI/MOV/MKV) ──► FFmpeg Transcode ──► H.264    │
 └───────────────────────────┬─────────────────────────────────────────┘
                             │  Frame extraction (FRAME_SKIP=3)
                             ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    GPU INFERENCE LAYER  (CUDA Thread)               │
 │                                                                     │
-│  ┌─────────────────────────┐    ┌──────────────────────────────┐   │
-│  │     Vision Agent        │    │       Motion Agent           │   │
-│  │  YOLOv8m · FP16 · CUDA  │    │   SEA-RAFT · FP32 · CUDA    │   │
-│  │                         │    │                              │   │
-│  │  • Person detection     │    │  • Dense optical flow        │   │
-│  │  • Vehicle detection    │    │  • p75 non-zero magnitude    │   │
-│  │  • Bounding boxes       │    │  • Sudden spike detection    │   │
-│  │  • Annotated frames     │    │  • Dominant direction        │   │
-│  └────────────┬────────────┘    └──────────────┬───────────────┘   │
-└───────────────┼──────────────────────────────────┼─────────────────┘
-                └────────────────┬─────────────────┘
+│  ┌─────────────────────────┐    ┌──────────────────────────────┐    │
+│  │     Vision Agent        │    │       Motion Agent           │    │
+│  │  YOLOv8m · FP16 · CUDA  │    │   SEA-RAFT · FP32 · CUDA    │     │
+│  │                         │    │                              │    │
+│  │  • Person detection     │    │  • Dense optical flow        │    │
+│  │  • Vehicle detection    │    │  • p75 non-zero magnitude    │    │
+│  │  • Bounding boxes       │    │  • Sudden spike detection    │    │
+│  │  • Annotated frames     │    │  • Dominant direction        │    │
+│  └────────────┬────────────┘    └──────────────┬───────────────┘    │
+└───────────────┼────────────────────────────────┼────────────────────┘
+                └────────────────┬───────────────┘
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                   BEHAVIOUR ANALYSIS LAYER                          │
 │                                                                     │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │                     Behavior Agent                           │  │
-│  │                                                              │  │
-│  │  Adaptive Baseline Learning (first 20 frames)                │  │
-│  │  baseline_mean, baseline_std ← p75 of motion magnitudes      │  │
-│  │                                                              │  │
-│  │  Rule Engine (all thresholds = baseline_mean + N×std):       │  │
-│  │  ┌──────────────────┬────────────────────────────────────┐   │  │
-│  │  │ Rule             │ Condition                          │   │  │
-│  │  ├──────────────────┼────────────────────────────────────┤   │  │
-│  │  │ overcrowding     │ persons ≥ 10 for 5 frames          │   │  │
-│  │  │ crowd_gathering  │ 4–9 persons, motion < mean+0.3σ    │   │  │
-│  │  │ crowd_panic      │ persons ≥ 4, motion > mean+3σ,     │   │  │
-│  │  │                  │ sudden_motion=True                 │   │  │
-│  │  │ fight_aggression │ sudden_motion, max > mean+3σ       │   │  │
-│  │  │ loitering        │ 1 person, motion < 0.8×mean, 40f   │   │  │
-│  │  └──────────────────┴────────────────────────────────────┘   │  │
-│  │                                                              │  │
-│  │  Sustained Counter: each rule has independent counter        │  │
-│  │  → fires only when condition met for SUSTAIN_FRAMES=5        │  │
-│  │  → resets after firing (natural debounce, no cooldown clash) │  │
-│  └────────────────────────────────┬─────────────────────────────┘  │
-└───────────────────────────────────┼────────────────────────────────┘
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │                     Behavior Agent                           │   │
+│  │                                                              │   │
+│  │  Adaptive Baseline Learning (first 20 frames)                │   │
+│  │  baseline_mean, baseline_std ← p75 of motion magnitudes      │   │
+│  │                                                              │   │
+│  │  Rule Engine (all thresholds = baseline_mean + N×std):       │   │
+│  │  ┌──────────────────┬────────────────────────────────────┐   │   │
+│  │  │ Rule             │ Condition                          │   │   │
+│  │  ├──────────────────┼────────────────────────────────────┤   │   │
+│  │  │ overcrowding     │ persons ≥ 10 for 5 frames          │   │   │
+│  │  │ crowd_gathering  │ 4–9 persons, motion < mean+0.3σ    │   │   │
+│  │  │ crowd_panic      │ persons ≥ 4, motion > mean+3σ,     │   │   │
+│  │  │                  │ sudden_motion=True                 │   │   │
+│  │  │ fight_aggression │ sudden_motion, max > mean+3σ       │   │   │ 
+│  │  │ loitering        │ 1 person, motion < 0.8×mean, 40f   │   │   │
+│  │  └──────────────────┴────────────────────────────────────┘   │   │
+│  │                                                              │   │
+│  │  Sustained Counter: each rule has independent counter        │   │
+│  │  → fires only when condition met for SUSTAIN_FRAMES=5        │   │
+│  │  → resets after firing (natural debounce, no cooldown clash) │   │
+│  └────────────────────────────────┬─────────────────────────────┘   │
+└───────────────────────────────────┼─────────────────────────────────┘
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     REASONING & OUTPUT LAYER                        │
 │                                                                     │
-│  ┌────────────────────┐    ┌──────────────────┐   ┌─────────────┐  │
-│  │   Reasoning Agent  │    │   Report Agent   │   │ Alert Agent │  │
-│  │                    │───►│                  │   │             │  │
-│  │ • Weighted score   │    │  Google Gemini   │   │ WebSocket   │  │
-│  │ • Dedup window     │    │  1.5 Flash LLM   │   │ SMTP Email  │  │
-│  │ • should_report    │    │                  │   │             │  │
-│  │   decision         │    │  Natural-language│   │ Rate-limited│  │
-│  └────────────────────┘    │  incident report │   │ per event   │  │
-│                            └────────┬─────────┘   └──────┬──────┘  │
-└─────────────────────────────────────┼────────────────────┼─────────┘
+│  ┌────────────────────┐    ┌──────────────────┐   ┌─────────────┐   │
+│  │   Reasoning Agent  │    │   Report Agent   │   │ Alert Agent │   │
+│  │                    │───►│                  │   │             │   │
+│  │ • Weighted score   │    │  Google Gemini   │   │ WebSocket   │   │
+│  │ • Dedup window     │    │  2.5 Flash LLM   │   │ SMTP Email  │   │
+│  │ • should_report    │    │                  │   │             │   │
+│  │   decision         │    │  Natural-language│   │ Rate-limited│   │
+│  └────────────────────┘    │  incident report │   │ per event   │   │
+│                            └────────┬─────────┘   └──────┬──────┘   │
+└─────────────────────────────────────┼────────────────────┼──────────┘
                                       ▼                    ▼
                               ┌───────────────────────────────┐
                               │   SQLite Database (async ORM) │
