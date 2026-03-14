@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+*.egg-info/
+
+# Environment
+.env
+*.db
+
+# Uploads / outputs (don't commit video files)
+backend/uploads/
+backend/outputs/
+
+# SEA-RAFT weights (too large for GitHub)
+backend/sea_raft/models/*.pth
+~/.cache/sea_raft/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

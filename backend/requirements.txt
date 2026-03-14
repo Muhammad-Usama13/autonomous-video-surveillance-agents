@@ -1,0 +1,39 @@
+# ─── PyTorch CUDA 12.1 (RTX 30xx/40xx) ──────────────────────
+# Install these FIRST with the CUDA index:
+#   pip install torch==2.3.0+cu121 torchvision==0.18.0+cu121 torchaudio==2.3.0+cu121 \
+#       --index-url https://download.pytorch.org/whl/cu121
+# Then install the rest:
+#   pip install -r requirements.txt
+
+# ─── Computer Vision ─────────────────────────────────────────
+ultralytics==8.2.0
+opencv-python-headless==4.9.0.80
+Pillow==10.3.0
+numpy==1.26.4
+
+# ─── SEA-RAFT dependencies ───────────────────────────────────
+huggingface-hub==0.23.4        # auto-download SEA-RAFT weights from HuggingFace
+einops==0.8.0                  # tensor ops used by SEA-RAFT core
+timm==1.0.3                    # vision model backbones used by SEA-RAFT
+scipy==1.13.1                  # used in SEA-RAFT evaluation utilities
+yacs==0.1.8                    # config system used by SEA-RAFT
+
+# ─── API Framework ───────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+aiofiles==23.2.1
+httpx==0.27.0
+websockets==12.0
+
+# ─── Database ────────────────────────────────────────────────
+sqlalchemy==2.0.30
+aiosqlite==0.20.0
+
+# ─── Config & Schemas ────────────────────────────────────────
+pydantic==2.7.1
+pydantic-settings==2.2.1
+python-dotenv==1.0.1
+
+# ─── AI / LLM ────────────────────────────────────────────────
+google-generativeai==0.5.4
