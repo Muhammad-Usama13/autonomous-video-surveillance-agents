@@ -54,7 +54,7 @@ The system was designed to solve the core limitations of traditional CCTV monito
 │                                                                     │
 │  ┌─────────────────────────┐    ┌──────────────────────────────┐    │
 │  │     Vision Agent        │    │       Motion Agent           │    │
-│  │  YOLOv8m · FP16 · CUDA  │    │   SEA-RAFT · FP32 · CUDA    │     │
+│  │  YOLOv8m · FP16 · CUDA  │    │   SEA-RAFT · FP32 · CUDA     │    │
 │  │                         │    │                              │    │
 │  │  • Person detection     │    │  • Dense optical flow        │    │
 │  │  • Vehicle detection    │    │  • p75 non-zero magnitude    │    │
