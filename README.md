@@ -19,7 +19,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square"/>
 </p>
 
-[System Architecture](#system-architecture) • [Key Capabilities](#key-capabilities) • [Quick Start](#quick-start) • [UI/UX & Themes](#uiux--themes) • [API Reference](#api-reference) • [IEEE Manuscript & Evaluation](#ieee-manuscript--benchmarks)
+[System Architecture](#system-architecture) • [Key Capabilities](#key-capabilities) • [Quick Start](#quick-start) • [UI/UX & Themes](#uiux--themes) • [API Reference](#api-reference) • [Evaluation](#ieee-manuscript--benchmarks)
 
 </div>
 
