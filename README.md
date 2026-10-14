@@ -270,24 +270,6 @@ Connect to `/ws/{session_id}` for live event streaming:
 
 ---
 
-## IEEE Manuscript & Benchmarks
-
-This repository includes a publication-ready **two-column IEEE LaTeX manuscript** and automated benchmarking suite located in `paper/`:
-
-### Manuscript Details
-* **File**: `paper/paper.tex`
-* **Target Venues**: IEEE Transactions on Information Forensics and Security (TIFS), IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI), or IEEE AVSS.
-* **Submission Guide**: [paper/IEEE_SUBMISSION_GUIDE.md](file:///home/muhammad-usama/Desktop/PRojects/autonomous-video-surveillance-agents/paper/IEEE_SUBMISSION_GUIDE.md)
-
-### Compiling LaTeX Paper
-```bash
-cd paper
-pdflatex paper.tex
-bibtex paper
-pdflatex paper.tex
-pdflatex paper.tex
-```
-
 ### Reproducible Benchmarking Suite
 To evaluate pipeline throughput, latency, and ablation metrics:
 ```bash
