@@ -7,14 +7,14 @@
 \hline
 \textbf{Agent / Component} & \textbf{Model / Engine} & \textbf{Precision} & \textbf{Latency (ms)} & \textbf{Throughput (FPS)} \\
 \hline
-Vision Agent & YOLOv8m & FP16 & 1369.09 & 0.7 \\
-Motion Agent & SEA-RAFT-M & FP32 & 655.45 & 1.5 \\
+Vision Agent & YOLOv8m & FP16 & 214.96 & 4.7 \\
+Motion Agent & SEA-RAFT-M & FP32 & 312.83 & 3.2 \\
 Behavior + Reasoning & Dynamic Rule Engine & CPU & $\approx 1.20$ & $>800$ \\
 \hline
-\textbf{End-to-End Pipeline} & \textbf{Multi-Agent} & \textbf{Hybrid} & \textbf{297.42} & \textbf{3.4} \\
+\textbf{End-to-End Pipeline} & \textbf{Multi-Agent} & \textbf{Hybrid} & \textbf{297.3} & \textbf{3.4} \\
 \textbf{Effective with Skip=3} & \textbf{Temporal Subsample} & \textbf{--} & \textbf{--} & \textbf{10.1} \\
 \hline
-\multicolumn{5}{l}{\footnotesize Peak VRAM Utilization: 4.63 GB} \\
+\multicolumn{5}{l}{\footnotesize Peak VRAM Utilization: 4.28 GB} \\
 \hline
 \end{tabular}
 \end{table}

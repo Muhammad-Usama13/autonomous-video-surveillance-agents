@@ -1,14 +1,14 @@
 {
   "latency": {
-    "vision_ms": 1369.09,
-    "vision_fps": 0.7,
+    "vision_ms": 214.96,
+    "vision_fps": 4.7,
     "motion_backend": "sea_raft",
-    "motion_ms": 655.45,
-    "motion_fps": 1.5,
-    "e2e_ms": 297.42,
+    "motion_ms": 312.83,
+    "motion_fps": 3.2,
+    "e2e_ms": 297.3,
     "e2e_fps": 3.4,
     "effective_fps_skip3": 10.1,
-    "peak_vram_gb": 4.63
+    "peak_vram_gb": 4.28
   },
   "ablation": {
     "K=1": {
