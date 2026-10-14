@@ -1,50 +1,38 @@
 {
-  "Local_Real_Surveillance (RWF-2000)": {
-    "video": "c264fd47-2998-4c59-97a1-eb006767ae82_D055_04.avi",
-    "total_frames": 238,
-    "processed_frames": 80,
-    "auc_roc": 0.4906,
+  "CUHK Avenue": {
+    "sequence": "CUHK Avenue (Avenue_01.avi)",
+    "total_frames": 350,
+    "processed_frames": 117,
+    "auc_roc": 0.4625,
+    "precision": 0.625,
+    "recall": 0.1351,
+    "f1_score": 0.2222,
+    "far_per_hour": 771.43,
+    "latency_ms": 328.89,
+    "effective_fps": 9.1
+  },
+  "UCSD Ped2": {
+    "sequence": "UCSD Ped2 (Test001 - Cyclist)",
+    "total_frames": 180,
+    "processed_frames": 60,
+    "auc_roc": 0.5482,
+    "precision": 1.0,
+    "recall": 0.0513,
+    "f1_score": 0.0976,
+    "far_per_hour": 0.0,
+    "latency_ms": 317.85,
+    "effective_fps": 9.4
+  },
+  "Real-World Fighting (RWF)": {
+    "sequence": "Real-World Fighting (RWF-2000)",
+    "total_frames": 120,
+    "processed_frames": 40,
+    "auc_roc": 0.4473,
     "precision": 0.0,
     "recall": 0.0,
     "f1_score": 0.0,
-    "far_per_hour": 0.0,
-    "latency_ms": 371.07,
-    "effective_fps": 8.0
-  },
-  "UCF-Crime (Surveillance)": {
-    "dataset": "UCF-Crime (13 Anomaly Categories)",
-    "scenes": "Real CCTV Networks",
-    "auc_roc": 0.842,
-    "far_per_hour": 1.15,
-    "precision": 0.885,
-    "recall": 0.824,
-    "f1_score": 0.8534,
-    "effective_fps": 78.5,
-    "baseline_sultani_auc": 0.7541,
-    "baseline_farneback_auc": 0.682
-  },
-  "ShanghaiTech Campus": {
-    "dataset": "ShanghaiTech (13 Campus Angles)",
-    "scenes": "Campus Pedestrian Walkways",
-    "auc_roc": 0.894,
-    "far_per_hour": 0.82,
-    "precision": 0.912,
-    "recall": 0.871,
-    "f1_score": 0.891,
-    "effective_fps": 81.2,
-    "baseline_sultani_auc": 0.7652,
-    "baseline_farneback_auc": 0.721
-  },
-  "CUHK Avenue": {
-    "dataset": "CUHK Avenue Plaza",
-    "scenes": "High-Angle Subway/Plaza",
-    "auc_roc": 0.918,
-    "far_per_hour": 0.45,
-    "precision": 0.935,
-    "recall": 0.902,
-    "f1_score": 0.9182,
-    "effective_fps": 83.4,
-    "baseline_sultani_auc": 0.803,
-    "baseline_farneback_auc": 0.758
+    "far_per_hour": 2700.0,
+    "latency_ms": 332.49,
+    "effective_fps": 9.0
   }
 }
