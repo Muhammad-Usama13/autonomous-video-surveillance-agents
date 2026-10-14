@@ -322,10 +322,6 @@ autonomous-video-surveillance-agents/
 │   │   │   └── api.js             # API client & robust frame URL resolver
 │   │   └── index.css              # Custom HSL design tokens (Obsidian Dark / Pearl Light)
 │   └── vite.config.js
-├── paper/
-│   ├── paper.tex                  # Formal two-column IEEE LaTeX manuscript
-│   ├── references.bib             # BibTeX citations (YOLOv8, SEA-RAFT, UCF-Crime, etc.)
-│   └── IEEE_SUBMISSION_GUIDE.md   # Step-by-step submission & compilation walkthrough
 ├── setup_gpu.sh                   # Automated Linux/CUDA environment installation script
 └── README.md
 ```
