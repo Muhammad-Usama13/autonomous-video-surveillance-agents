@@ -26,6 +26,18 @@ warnings.filterwarnings(
     category=FutureWarning,
 )
 
+# PyTorch 2.6+ defaults weights_only=True, which breaks ultralytics YOLO model unpickling
+try:
+    import torch
+    _orig_torch_load = torch.load
+    def _safe_torch_load(*args, **kwargs):
+        if "weights_only" not in kwargs:
+            kwargs["weights_only"] = False
+        return _orig_torch_load(*args, **kwargs)
+    torch.load = _safe_torch_load
+except Exception:
+    pass
+
 import uuid
 import asyncio
 import aiofiles
@@ -363,23 +375,27 @@ async def delete_session(session_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @app.get("/api/video/{session_id}")
-async def stream_video(session_id: str, request: Request):
+async def stream_video(session_id: str, request: Request, annotated: bool = False):
     """
     Streams the browser-compatible H.264 MP4 version of the uploaded video.
+    If annotated=True and an annotated version exists, stream that instead.
     Supports Range requests for seeking/scrubbing in HTML5 <video>.
-    Falls back to the original file if transcoding hasn't completed yet.
     """
     upload_dir = Path(settings.UPLOAD_DIR)
 
-    # Prefer the web-transcoded H.264 MP4
+    # Check for annotated version if requested
+    annotated_path = upload_dir / f"{session_id}_annotated_web.mp4"
     web_path = upload_dir / f"{session_id}_web.mp4"
-    if web_path.exists() and web_path.stat().st_size > 0:
+
+    if annotated and annotated_path.exists() and annotated_path.stat().st_size > 0:
+        video_path = annotated_path
+    elif web_path.exists() and web_path.stat().st_size > 0:
         video_path = web_path
     else:
-        # Fallback to original (may not play in browser if FMP4/AVI)
+        # Fallback to original
         video_path = None
         for f in upload_dir.glob(f"{session_id}_*"):
-            if "_web.mp4" not in f.name:
+            if "_web.mp4" not in f.name and "_annotated" not in f.name:
                 video_path = f
                 break
 
@@ -435,8 +451,8 @@ async def stream_video(session_id: str, request: Request):
 @app.get("/api/sessions/{session_id}/video-info")
 async def session_video_info(session_id: str, db: AsyncSession = Depends(get_db)):
     """
-    Returns URLs for the original uploaded video, all annotated incident frames,
-    and a structured AI summary for the VideoPlayer page.
+    Returns URLs for the original uploaded video, annotated video stream,
+    all annotated incident frames, and a structured AI summary for the VideoPlayer page.
     """
     result = await db.execute(
         select(SessionModel).where(SessionModel.session_id == session_id)
@@ -454,11 +470,12 @@ async def session_video_info(session_id: str, db: AsyncSession = Depends(get_db)
     web_path = upload_dir / f"{session_id}_web.mp4"
     if web_path.exists() and web_path.stat().st_size > 0:
         web_ready = True
-
-    # Always use the streaming API endpoint
-    for f in upload_dir.glob(f"{session_id}_*"):
         video_url = f"/api/video/{session_id}"
-        break
+
+    # Check if annotated version with YOLO bounding boxes exists
+    annotated_path = upload_dir / f"{session_id}_annotated_web.mp4"
+    has_annotated  = annotated_path.exists() and annotated_path.stat().st_size > 0
+    annotated_url  = f"/api/video/{session_id}?annotated=true" if has_annotated else None
 
     # Get all incidents for this session with frame paths
     inc_result = await db.execute(
@@ -514,16 +531,18 @@ async def session_video_info(session_id: str, db: AsyncSession = Depends(get_db)
         summary = f"No anomalies were detected in '{sess.video_name}'. The footage appears normal."
 
     return {
-        "session_id":   session_id,
-        "video_name":   sess.video_name,
-        "status":       sess.status,
-        "video_url":    video_url,
-        "web_ready":    web_ready,        # True = H.264 MP4 ready for browser
-        "timeline":     timeline,
-        "summary":      summary,
-        "total_incidents": len(incidents),
-        "started_at":   sess.started_at.isoformat() if sess.started_at else None,
-        "finished_at":  sess.finished_at.isoformat() if sess.finished_at else None,
+        "session_id":          session_id,
+        "video_name":          sess.video_name,
+        "status":              sess.status,
+        "video_url":           video_url,
+        "annotated_video_url": annotated_url,
+        "has_annotated":       has_annotated,
+        "web_ready":           web_ready,        # True = H.264 MP4 ready for browser
+        "timeline":            timeline,
+        "summary":             summary,
+        "total_incidents":     len(incidents),
+        "started_at":          sess.started_at.isoformat() if sess.started_at else None,
+        "finished_at":         sess.finished_at.isoformat() if sess.finished_at else None,
     }
 
 

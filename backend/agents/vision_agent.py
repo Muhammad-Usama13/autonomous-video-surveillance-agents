@@ -17,6 +17,13 @@ from dataclasses import dataclass, field
 try:
     import torch
     TORCH_AVAILABLE = True
+    # PyTorch 2.6+ defaults weights_only=True, which blocks ultralytics models
+    _orig_torch_load = torch.load
+    def _safe_torch_load(*args, **kwargs):
+        if "weights_only" not in kwargs:
+            kwargs["weights_only"] = False
+        return _orig_torch_load(*args, **kwargs)
+    torch.load = _safe_torch_load
 except ImportError:
     TORCH_AVAILABLE = False
 
@@ -95,6 +102,12 @@ class VisionAgent:
             print("[VisionAgent] ultralytics not installed — stub mode.")
             return
         try:
+            from pathlib import Path
+            p = Path(self.model_size)
+            if not p.exists():
+                backend_p = Path(__file__).parent.parent / self.model_size
+                if backend_p.exists():
+                    self.model_size = str(backend_p)
             self.model = YOLO(self.model_size)
             self.model.to(self.device)
             # Do NOT call model.model.half() manually — ultralytics handles
@@ -135,7 +148,7 @@ class VisionAgent:
                 area=(x2 - x1) * (y2 - y1),
             ))
 
-        annotated = self._draw_boxes(frame.copy(), detections)
+        annotated = self.annotate_frame(frame.copy(), detections, is_anomaly=False)
 
         return VisionResult(
             frame_idx=frame_idx,
@@ -145,27 +158,110 @@ class VisionAgent:
             annotated_frame=annotated,
         )
 
-    # ── Internals ─────────────────────────────────────────────────────────
+    # ── High-Tech HUD & Bounding Box Annotation ───────────────────────────
+
+    def annotate_frame(
+        self,
+        frame: np.ndarray,
+        detections: List[Detection],
+        is_anomaly: bool = False,
+        event_type: str = "normal",
+        confidence: float = 0.0,
+        timestamp: str = "",
+    ) -> np.ndarray:
+        """
+        Draws high-contrast surveillance bounding boxes:
+          - GREEN for Normal behavior
+          - RED for Abnormal / Alert behavior
+        Includes HUD overlay, filled label pill, and corner brackets.
+        """
+        h, w = frame.shape[:2]
+        canvas = frame.copy()
+
+        # Color scheme (BGR)
+        if is_anomaly:
+            box_color   = (30, 30, 240)    # Vivid Red
+            glow_color  = (50, 50, 255)    # Outer accent
+            badge_bg    = (20, 20, 180)    # Deep Red badge
+            text_color  = (255, 255, 255)  # White text
+            status_text = f"ALERT: {event_type.replace('_', ' ').upper()}"
+            status_bg   = (15, 15, 190)
+        else:
+            box_color   = (80, 220, 0)     # Vivid Green
+            glow_color  = (120, 255, 50)   # Outer accent
+            badge_bg    = (20, 130, 0)     # Deep Green badge
+            text_color  = (255, 255, 255)  # White text
+            status_text = "MONITORING: NORMAL ACTIVITY"
+            status_bg   = (10, 80, 10)
+
+        # 1. Draw detections
+        for d in detections:
+            x1, y1, x2, y2 = d.bbox
+            bw = x2 - x1
+            bh = y2 - y1
+
+            # Primary rectangle
+            cv2.rectangle(canvas, (x1, y1), (x2, y2), box_color, 2, cv2.LINE_AA)
+
+            # High-tech corner bracket accents (length = 15% of dimension)
+            corner_len = max(8, min(18, int(min(bw, bh) * 0.2)))
+            # Top-left
+            cv2.line(canvas, (x1, y1), (x1 + corner_len, y1), glow_color, 3, cv2.LINE_AA)
+            cv2.line(canvas, (x1, y1), (x1, y1 + corner_len), glow_color, 3, cv2.LINE_AA)
+            # Top-right
+            cv2.line(canvas, (x2, y1), (x2 - corner_len, y1), glow_color, 3, cv2.LINE_AA)
+            cv2.line(canvas, (x2, y1), (x2, y1 + corner_len), glow_color, 3, cv2.LINE_AA)
+            # Bottom-left
+            cv2.line(canvas, (x1, y2), (x1 + corner_len, y2), glow_color, 3, cv2.LINE_AA)
+            cv2.line(canvas, (x1, y2), (x1, y2 - corner_len), glow_color, 3, cv2.LINE_AA)
+            # Bottom-right
+            cv2.line(canvas, (x2, y2), (x2 - corner_len, y2), glow_color, 3, cv2.LINE_AA)
+            cv2.line(canvas, (x2, y2), (x2, y2 - corner_len), glow_color, 3, cv2.LINE_AA)
+
+            # Pill Label badge: e.g. [NORMAL] Person 88% or [ALERT] Person 92%
+            tag_prefix = "ABNORMAL" if is_anomaly else "NORMAL"
+            label_str = f"[{tag_prefix}] {d.label.capitalize()} {int(d.confidence * 100)}%"
+            (txt_w, txt_h), baseline = cv2.getTextSize(
+                label_str, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1
+            )
+            
+            badge_y1 = max(0, y1 - txt_h - 8)
+            badge_y2 = y1
+            badge_x2 = min(w - 1, x1 + txt_w + 10)
+            
+            # Draw badge background
+            cv2.rectangle(canvas, (x1, badge_y1), (badge_x2, badge_y2), badge_bg, -1)
+            cv2.rectangle(canvas, (x1, badge_y1), (badge_x2, badge_y2), box_color, 1)
+            cv2.putText(
+                canvas, label_str, (x1 + 5, badge_y2 - 4),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.45, text_color, 1, cv2.LINE_AA
+            )
+
+        # 2. Top-Left HUD Status Banner
+        banner_h = 32
+        banner_w = min(w - 20, 360 if is_anomaly else 300)
+        cv2.rectangle(canvas, (10, 10), (10 + banner_w, 10 + banner_h), status_bg, -1)
+        cv2.rectangle(canvas, (10, 10), (10 + banner_w, 10 + banner_h), box_color, 2)
+        
+        dot_color = (0, 0, 255) if is_anomaly else (0, 255, 0)
+        cv2.circle(canvas, (24, 10 + banner_h // 2), 5, dot_color, -1)
+        
+        hud_label = f"{status_text} | {len(detections)} OBJECTS"
+        if timestamp:
+            hud_label += f" | {timestamp}"
+        cv2.putText(
+            canvas, hud_label, (36, 10 + banner_h // 2 + 5),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA
+        )
+
+        return canvas
 
     def _draw_boxes(self, frame: np.ndarray, detections: List[Detection]) -> np.ndarray:
-        color_map = {
-            "person":     (0, 255, 128),
-            "car":        (255, 160, 0),
-            "motorcycle": (255, 80, 0),
-            "bus":        (255, 80, 0),
-            "truck":      (255, 80, 0),
-        }
-        for d in detections:
-            color = color_map.get(d.label, (200, 200, 200))
-            x1, y1, x2, y2 = d.bbox
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-            label_txt = f"{d.label} {d.confidence:.2f}"
-            cv2.putText(frame, label_txt, (x1, y1 - 6),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.55, color, 1)
-        return frame
+        return self.annotate_frame(frame, detections, is_anomaly=False)
 
     def _stub_detect(self, frame: np.ndarray, frame_idx: int) -> VisionResult:
-        return VisionResult(frame_idx=frame_idx, annotated_frame=frame.copy())
+        annotated = self.annotate_frame(frame.copy(), [], is_anomaly=False)
+        return VisionResult(frame_idx=frame_idx, annotated_frame=annotated)
 
     # ── Diagnostics ───────────────────────────────────────────────────────
 

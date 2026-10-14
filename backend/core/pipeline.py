@@ -161,6 +161,17 @@ class SurveillancePipeline:
         processed = 0
         incidents: List[Incident] = []
 
+        # Video writer for live annotated stream (Green=Normal, Red=Abnormal)
+        annotated_raw = Path(settings.UPLOAD_DIR) / f"{self.session_id}_annotated_raw.mp4"
+        annotated_web = Path(settings.UPLOAD_DIR) / f"{self.session_id}_annotated_web.mp4"
+        out_fps = max(fps / settings.FRAME_SKIP, 5.0)
+        writer = cv2.VideoWriter(
+            str(annotated_raw),
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            out_fps,
+            (width, height)
+        )
+
         try:
             while True:
                 ret, frame = cap.read()
@@ -178,15 +189,23 @@ class SurveillancePipeline:
 
                 behavior  = self._behavior.analyse(vision, motion, frame_idx)
                 reasoning = self._reasoning.evaluate(vision, motion, behavior, frame_idx)
+                ts = _frames_to_timestamp(frame_idx, fps)
 
                 if reasoning.should_report:
-                    ts = _frames_to_timestamp(frame_idx, fps)
                     description = await loop.run_in_executor(
                         None,
                         self._report.generate, ts, vision, motion, behavior, reasoning
                     )
+                    annotated_abnormal_frame = self._vision.annotate_frame(
+                        frame.copy(),
+                        vision.detections,
+                        is_anomaly=True,
+                        event_type=reasoning.classified_event,
+                        confidence=reasoning.confidence,
+                        timestamp=ts,
+                    )
                     frame_path = self._save_frame(
-                        vision.annotated_frame if vision.annotated_frame is not None else frame,
+                        annotated_abnormal_frame,
                         frame_idx,
                     )
                     incident = Incident(
@@ -201,6 +220,20 @@ class SurveillancePipeline:
                     incidents.append(incident)
                     await self.alert_agent.dispatch(incident, ["dashboard"])
 
+                    # Write red alert frame to annotated video stream
+                    if writer.isOpened():
+                        writer.write(annotated_abnormal_frame)
+                else:
+                    # Write green normal frame to annotated video stream
+                    if writer.isOpened():
+                        normal_annotated = self._vision.annotate_frame(
+                            frame.copy(),
+                            vision.detections,
+                            is_anomaly=False,
+                            timestamp=ts,
+                        )
+                        writer.write(normal_annotated)
+
                 if on_progress:
                     await on_progress(
                         processed,
@@ -210,6 +243,15 @@ class SurveillancePipeline:
 
         finally:
             cap.release()
+            if writer.isOpened():
+                writer.release()
+            # Transcode annotated raw stream to browser-ready H.264
+            if annotated_raw.exists() and annotated_raw.stat().st_size > 0:
+                await loop.run_in_executor(
+                    None, _transcode_to_h264, str(annotated_raw), str(annotated_web)
+                )
+                if annotated_raw.exists():
+                    annotated_raw.unlink(missing_ok=True)
 
         return incidents
 

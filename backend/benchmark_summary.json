@@ -1,0 +1,43 @@
+{
+  "latency": {
+    "vision_ms": 1369.09,
+    "vision_fps": 0.7,
+    "motion_backend": "sea_raft",
+    "motion_ms": 655.45,
+    "motion_fps": 1.5,
+    "e2e_ms": 297.42,
+    "e2e_fps": 3.4,
+    "effective_fps_skip3": 10.1,
+    "peak_vram_gb": 4.63
+  },
+  "ablation": {
+    "K=1": {
+      "sustain_window": 1,
+      "total_triggers": 120,
+      "false_positives": 30,
+      "true_positives": 90,
+      "precision": 0.75
+    },
+    "K=3": {
+      "sustain_window": 3,
+      "total_triggers": 29,
+      "false_positives": 0,
+      "true_positives": 29,
+      "precision": 1.0
+    },
+    "K=5": {
+      "sustain_window": 5,
+      "total_triggers": 18,
+      "false_positives": 0,
+      "true_positives": 18,
+      "precision": 1.0
+    },
+    "K=8": {
+      "sustain_window": 8,
+      "total_triggers": 11,
+      "false_positives": 0,
+      "true_positives": 11,
+      "precision": 1.0
+    }
+  }
+}

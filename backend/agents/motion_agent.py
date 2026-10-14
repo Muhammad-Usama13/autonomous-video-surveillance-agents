@@ -116,9 +116,9 @@ except ImportError:
 # ── SEA-RAFT HuggingFace model IDs ────────────────────────────────────────────
 # Model sizes — M is the sweet spot for surveillance (fast + accurate)
 _HF_MODELS = {
-    "M": "MemorySlices/Tartan-C-T-TSKH-spring540x960-M",   # Medium — recommended
-    "L": "MemorySlices/Tartan-C-T-TSKH-spring540x960-L",   # Large  — more accurate
-    "S": "MemorySlices/Tartan-C-T-TSKH-spring540x960-S",   # Small  — fastest
+    "M": ("Yarimasune/SEA-RAFT", "Tartan-C-T-TSKH-spring540x960-M.pth"),
+    "L": ("Yarimasune/SEA-RAFT", "Tartan-C-T-TSKH-spring540x960-M.pth"),
+    "S": ("Yarimasune/SEA-RAFT", "Tartan-C-T-TSKH-spring540x960-S.pth"),
 }
 _HF_CONFIGS = {
     "M": "config/eval/spring-M.json",
@@ -222,9 +222,10 @@ class MotionAgent:
             print(f"[MotionAgent] Downloading SEA-RAFT-{self.MODEL_SIZE} from HuggingFace...")
             cache_dir.mkdir(parents=True, exist_ok=True)
             try:
+                repo_id, hf_filename = _HF_MODELS[self.MODEL_SIZE]
                 hf_path = hf_hub_download(
-                    repo_id=_HF_MODELS[self.MODEL_SIZE],
-                    filename="model.pth",
+                    repo_id=repo_id,
+                    filename=hf_filename,
                     cache_dir=str(cache_dir),
                 )
                 import shutil as _sh
@@ -295,6 +296,8 @@ class MotionAgent:
                       f"mean={result.mean_magnitude:.4f} max={result.max_magnitude:.4f}")
             return result
         return self._farneback_analyse(frame, frame_idx)
+
+    analyze = analyse
 
     # ── SEA-RAFT inference ─────────────────────────────────────────────────────
 

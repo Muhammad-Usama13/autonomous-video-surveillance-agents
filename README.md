@@ -1,23 +1,25 @@
 <div align="center">
 
-<h1>
-  <img src="https://img.shields.io/badge/AVSA-Autonomous%20Video%20Surveillance%20Agents-00e5ff?style=for-the-badge&labelColor=0a0d12" alt="AVSA"/>
-</h1>
+# AVSA: Autonomous Video Surveillance Agents
+### Edge-to-Cloud Multi-Agent AI Framework for Behavioral Anomaly Detection & Forensic Reporting
 
 <p align="center">
-  <strong>A production-grade, multi-agent AI surveillance system that autonomously detects, classifies, and reports anomalous behaviour in video streams — in real time.</strong>
+  <strong>A production-grade, multi-agent AI surveillance system combining real-time object tracking, deep optical flow, adaptive statistical baselining, and multimodal foundation models.</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?style=flat-square&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PyTorch-2.x%20%2B%20CUDA-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"/>
   <img src="https://img.shields.io/badge/FastAPI-0.111-009688?style=flat-square&logo=fastapi&logoColor=white"/>
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black"/>
-  <img src="https://img.shields.io/badge/YOLOv8m-Ultralytics-FF6600?style=flat-square"/>
+  <img src="https://img.shields.io/badge/React-18%20%2B%20Vite-61DAFB?style=flat-square&logo=react&logoColor=black"/>
+  <img src="https://img.shields.io/badge/YOLOv8m-FP16%20TensorRT-FF6600?style=flat-square"/>
   <img src="https://img.shields.io/badge/SEA--RAFT-ECCV%202024-00e5ff?style=flat-square"/>
-  <img src="https://img.shields.io/badge/Gemini-1.5%20Flash-4285F4?style=flat-square&logo=google&logoColor=white"/>
-  <img src="https://img.shields.io/badge/CUDA-12.x-76B900?style=flat-square&logo=nvidia&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Google%20Gemini-Flash%20Multimodal-4285F4?style=flat-square&logo=google&logoColor=white"/>
+  <img src="https://img.shields.io/badge/IEEE%20Format-Manuscript%20Included-00629B?style=flat-square"/>
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square"/>
 </p>
+
+[System Architecture](#system-architecture) • [Key Capabilities](#key-capabilities) • [Quick Start](#quick-start) • [UI/UX & Themes](#uiux--themes) • [API Reference](#api-reference) • [IEEE Manuscript & Evaluation](#ieee-manuscript--benchmarks)
 
 </div>
 
@@ -25,430 +27,333 @@
 
 ## Overview
 
-AVSA is an end-to-end AI surveillance platform built on a **collaborative multi-agent architecture**. Rather than a monolithic model, six specialised agents each own a distinct responsibility — object detection, motion analysis, behaviour classification, threat reasoning, natural-language reporting, and alert dispatch — and communicate through a shared async pipeline.
+**AVSA (Autonomous Video Surveillance Agents)** is an end-to-end, multi-agent artificial intelligence platform designed for municipal, enterprise, and campus security environments. Unlike monolithic black-box neural networks, AVSA decomposes the video analytics pipeline into **six decoupled, collaborative micro-agents**:
 
-The system was designed to solve the core limitations of traditional CCTV monitoring:
-
-| Problem | AVSA Solution |
-|---|---|
-| Operators miss events due to fatigue | Fully autonomous 24/7 detection |
-| Fixed thresholds fail across different cameras | Per-video adaptive baseline learning |
-| Frame-level false positives | Sustained counter confirmation (5+ consecutive frames) |
-| Incompatible video formats | Automatic FFmpeg H.264 transcoding |
-| No context in alerts | Gemini LLM generates natural-language incident reports |
-| Delayed notification | Sub-second WebSocket push to dashboard |
+1. **Vision Agent**: GPU-accelerated spatial perception via **YOLOv8m** with FP16 inference, outputting real-time bounding boxes (**Green for routine activity**, **Red for confirmed threats**).
+2. **Motion Agent**: Dense flow tracking using Princeton's **SEA-RAFT** (ECCV 2024), computing 75th-percentile non-zero motion velocity and directional dispersion.
+3. **Behavior Agent**: Dynamically learns an per-video statistical baseline ($\mu, \sigma$) during initial calibration and applies independent **sustained counters** to prevent transient false alarms.
+4. **Reasoning Agent**: Multi-criteria weighted threat evaluation with temporal deduplication gating to suppress redundant notifications.
+5. **Report Agent**: Synthesizes structured forensic telemetry into legally defensible, human-readable natural language narratives via **Google Gemini Flash**.
+6. **Alert Agent**: Dispatches sub-second WebSocket state pushes, interactive dashboard telemetry, and optional SMTP security dispatches.
 
 ---
 
-## Architecture
+## Key Capabilities
+
+### 1. Dual Bounding Box Protocol (Normal vs. Abnormal)
+* **🟢 Green Bounding Box (`[NORMAL] <Class> <Conf>%`)**: Identifies routine pedestrian walking pace, standard density, and stationary vehicles.
+* **🔴 Red Bounding Box (`[ABNORMAL ALERT] <Event> <Conf>%`)**: Triggered when multi-agent reasoning confirms an incident (e.g., panic scattering, physical aggression, overcrowding, or suspicious loitering), complete with top-left tactical HUD banners.
+* **Dual-Stream Playback**: Viewers can toggle live on the frontend between:
+  - `🎯 YOLO Detection Boxes`: Watch video playback with live bounding boxes rendered frame-by-frame.
+  - `📹 Raw Feed`: Inspect pristine original camera feed.
+
+### 2. Intuitive Optical Flow Velocity Speedometer
+To eliminate confusion for non-technical security personnel, deep optical flow tensor fields are translated into an actionable 3-zone activity speedometer:
+* **Zone 1: Calm Motion (< 4.0 px/frame)** — Normal walking pace; bounding boxes remain green.
+* **Zone 2: Active Gathering (4.0 – 8.0 px/frame)** — Clustering, rapid walking, or heightened activity.
+* **Zone 3: Sudden Surge (> 8.0 px/frame)** — High velocity running, emergency scattering, or physical altercations; triggers red anomaly bounding boxes.
+* **Interactive Guide**: Accessible via the header "Bounding Box & Motion Guide" button for onboarding operators.
+
+### 3. Redesigned Unified 3-Column Surveillance Station
+* **Left Column (Surveillance Player)**: Full H.264 streaming player with dual-stream selector, scrub timeline with severity-coded anomaly pips, and real-time optical flow gauge.
+* **Center Column (Forensic Box Inspector)**: Displays the active anomaly's high-contrast red bounding box snapshot, threat classification, and Gemini forensic explanation. Includes an **Expand ↗** high-res modal.
+* **Right Column (Timeline Feed)**: Filterable chronological anomalies with live red-box thumbnail badges and one-click video seek.
+
+### 4. World-Class Dark & Light Themes
+* **Obsidian Dark Mode**: Deep midnight slate (`#0b0f19`) and rich cards (`#131b2e`) with hairline borders (`#1f2a42`), soft sky blue accents (`#38bdf8`), and zero distracting scanlines or jitter animations.
+* **Pristine Light Mode**: Clean Apple/Stripe-inspired pearl slate (`#f8fafc`) with pure white elevated surfaces (`#ffffff`).
+* **Theme Persistence**: Toggled via the sidebar sun/moon button and persisted in `localStorage`.
+
+---
+
+## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        VIDEO INPUT LAYER                            │
-│   Uploaded File (MP4/AVI/MOV/MKV) ──► FFmpeg Transcode ──► H.264    │
-└───────────────────────────┬─────────────────────────────────────────┘
-                            │  Frame extraction (FRAME_SKIP=3)
-                            ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    GPU INFERENCE LAYER  (CUDA Thread)               │
-│                                                                     │
-│  ┌─────────────────────────┐    ┌──────────────────────────────┐    │
-│  │     Vision Agent        │    │       Motion Agent           │    │
-│  │  YOLOv8m · FP16 · CUDA  │    │   SEA-RAFT · FP32 · CUDA     │    │
-│  │                         │    │                              │    │
-│  │  • Person detection     │    │  • Dense optical flow        │    │
-│  │  • Vehicle detection    │    │  • p75 non-zero magnitude    │    │
-│  │  • Bounding boxes       │    │  • Sudden spike detection    │    │
-│  │  • Annotated frames     │    │  • Dominant direction        │    │
-│  └────────────┬────────────┘    └──────────────┬───────────────┘    │
-└───────────────┼────────────────────────────────┼────────────────────┘
-                └────────────────┬───────────────┘
-                                 ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                   BEHAVIOUR ANALYSIS LAYER                          │
-│                                                                     │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                     Behavior Agent                           │   │
-│  │                                                              │   │
-│  │  Adaptive Baseline Learning (first 20 frames)                │   │
-│  │  baseline_mean, baseline_std ← p75 of motion magnitudes      │   │
-│  │                                                              │   │
-│  │  Rule Engine (all thresholds = baseline_mean + N×std):       │   │
-│  │  ┌──────────────────┬────────────────────────────────────┐   │   │
-│  │  │ Rule             │ Condition                          │   │   │
-│  │  ├──────────────────┼────────────────────────────────────┤   │   │
-│  │  │ overcrowding     │ persons ≥ 10 for 5 frames          │   │   │
-│  │  │ crowd_gathering  │ 4–9 persons, motion < mean+0.3σ    │   │   │
-│  │  │ crowd_panic      │ persons ≥ 4, motion > mean+3σ,     │   │   │
-│  │  │                  │ sudden_motion=True                 │   │   │
-│  │  │ fight_aggression │ sudden_motion, max > mean+3σ       │   │   │ 
-│  │  │ loitering        │ 1 person, motion < 0.8×mean, 40f   │   │   │
-│  │  └──────────────────┴────────────────────────────────────┘   │   │
-│  │                                                              │   │
-│  │  Sustained Counter: each rule has independent counter        │   │
-│  │  → fires only when condition met for SUSTAIN_FRAMES=5        │   │
-│  │  → resets after firing (natural debounce, no cooldown clash) │   │
-│  └────────────────────────────────┬─────────────────────────────┘   │
-└───────────────────────────────────┼─────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                          VIDEO INGESTION LAYER                         │
+│    File Upload (MP4/AVI/MOV/MKV/WebM) ──► FFmpeg H.264 Dual Transcode  │
+└────────────────────────────────────┬───────────────────────────────────┘
+                                     │ Frame extraction (FRAME_SKIP=3)
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                     PARALLEL GPU INFERENCE LAYER                       │
+│                                                                        │
+│   ┌───────────────────────────┐      ┌──────────────────────────────┐  │
+│   │       Vision Agent        │      │         Motion Agent         │  │
+│   │    YOLOv8m · CUDA FP16    │      │    SEA-RAFT · CUDA FP32      │  │
+│   │                           │      │                              │  │
+│   │  • Object localization    │      │  • Dense velocity vectors    │  │
+│   │  • Class confidence       │      │  • Non-zero p75 magnitude    │  │
+│   │  • Green/Red bounding box │      │  • Directional divergence    │  │
+│   └─────────────┬─────────────┘      └──────────────┬───────────────┘  │
+└─────────────────┼───────────────────────────────────┼──────────────────┘
+                  └─────────────────┬─────────────────┘
                                     ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                     REASONING & OUTPUT LAYER                        │
-│                                                                     │
-│  ┌────────────────────┐    ┌──────────────────┐   ┌─────────────┐   │
-│  │   Reasoning Agent  │    │   Report Agent   │   │ Alert Agent │   │
-│  │                    │───►│                  │   │             │   │
-│  │ • Weighted score   │    │  Google Gemini   │   │ WebSocket   │   │
-│  │ • Dedup window     │    │  2.5 Flash LLM   │   │ SMTP Email  │   │
-│  │ • should_report    │    │                  │   │             │   │
-│  │   decision         │    │  Natural-language│   │ Rate-limited│   │
-│  └────────────────────┘    │  incident report │   │ per event   │   │
-│                            └────────┬─────────┘   └──────┬──────┘   │
-└─────────────────────────────────────┼────────────────────┼──────────┘
-                                      ▼                    ▼
-                              ┌───────────────────────────────┐
-                              │   SQLite Database (async ORM) │
-                              │   Incident records + frames   │
-                              └───────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                       BEHAVIOR REASONING LAYER                         │
+│                                                                        │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │                        Behavior Agent                          │   │
+│   │  • Adaptive baseline learning (initial 20 frames: μ, σ)        │   │
+│   │  • Dynamic multi-anomaly rule evaluation                       │   │
+│   │  • Sustained frame counter (K=5 frames debouncing)             │   │
+│   └───────────────────────────────┬────────────────────────────────┘   │
+│                                   ▼                                    │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │                        Reasoning Agent                         │   │
+│   │  • Weighted multi-factor confidence scoring                    │   │
+│   │  • Temporal deduplication window                               │   │
+│   │  • should_report gating decision                               │   │
+│   └───────────────────────────────┬────────────────────────────────┘   │
+└───────────────────────────────────┼────────────────────────────────────┘
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                       REPORTING & DISPATCH LAYER                       │
+│                                                                        │
+│   ┌───────────────────────────────┐  ┌─────────────────────────────┐   │
+│   │         Report Agent          │  │         Alert Agent         │   │
+│   │      Google Gemini Flash      │  │  WebSocket broadcast (sub-s)│   │
+│   │  Auditable incident narrative │  │  SMTP Email notifications   │   │
+│   └───────────────┬───────────────┘  └──────────────┬──────────────┘   │
+└───────────────────┼─────────────────────────────────┼──────────────────┘
+                    ▼                                 ▼
+          ┌───────────────────────────────────────────────────┐
+          │            Async SQLite / PostgreSQL DB           │
+          │     Incidents · Annotated Frames · Sessions       │
+          └───────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Tech Stack
 
-### Backend
-| Component | Technology | Notes |
-|---|---|---|
-| API Framework | FastAPI 0.111 + Uvicorn | Async, WebSocket support |
-| Object Detection | YOLOv8m (Ultralytics) | CUDA FP16, ~140 FPS on RTX 3080 |
-| Optical Flow | **SEA-RAFT** (ECCV 2024) | CUDA FP32, 22.9% better than RAFT |
-| LLM Reporting | Google Gemini 1.5 Flash | Natural-language incident reports |
-| Video Transcoding | FFmpeg | AVI/MOV/MKV → H.264 MP4 |
-| Database | SQLAlchemy async + SQLite | Incidents, sessions, frames |
-| Config | Pydantic-settings | `.env` driven, type-safe |
+### Deep Learning & Backend
+* **Python 3.10 – 3.12** with native async/await
+* **FastAPI 0.111** + **Uvicorn**: High-concurrency async REST and WebSocket endpoints
+* **Ultralytics YOLOv8m**: Spatial object detection running in Tensor Core FP16
+* **SEA-RAFT (ECCV 2024 Oral)**: State-of-the-art optical flow with dynamic module registration
+* **Google Gemini 1.5 / 2.5 Flash**: Multimodal forensic narrative synthesis
+* **FFmpeg**: Hardware-accelerated browser transcoding with faststart `moov` atom placement
+* **SQLAlchemy + aiosqlite**: Asynchronous ORM persistence
 
-### Frontend
-| Component | Technology |
-|---|---|
-| Framework | React 18 + Vite |
-| Styling | Tailwind CSS + custom design system |
-| Charts | Recharts |
-| Routing | React Router v6 |
-| Real-time | Native WebSocket hook |
-
-### Hardware Requirements
-| Tier | Spec | Performance |
-|---|---|---|
-| Minimum | NVIDIA GTX 1060 6GB + CUDA 11 | ~15 FPS pipeline |
-| Recommended | NVIDIA RTX 3080 + CUDA 12 | ~60 FPS pipeline |
-| Tested On | NVIDIA RTX 4050 Laptop 6GB | ~45 FPS pipeline |
+### Frontend Dashboard
+* **React 18** + **Vite 5**: Optimized single-page application
+* **Tailwind CSS**: Custom HSL-tailored dark and light design system
+* **Recharts**: Responsive threat distributions and category bar metrics
+* **React Router v6**: Modular client-side routing
 
 ---
 
-## Key Design Decisions
+## Quick Start
 
-### 1. SEA-RAFT over RAFT for Optical Flow
+### 1. Prerequisites
+* **Operating System**: Linux (Ubuntu 20.04/22.04/24.04 recommended) or Windows with WSL2
+* **NVIDIA GPU**: RTX 2060 or higher with 6GB+ VRAM (tested on RTX 4050 Laptop GPU)
+* **System Packages**: `git`, `ffmpeg`, `curl`, `python3-venv`, `nodejs` (v18+)
 
-SEA-RAFT (Simple, Efficient, Accurate RAFT, ECCV 2024 Oral — Best Paper Award Candidate) was chosen over the original RAFT model for three reasons:
+### 2. Automated One-Command Setup
+Run the automated environment preparation script:
+```bash
+chmod +x setup_gpu.sh
+./setup_gpu.sh
+```
+This script automatically:
+* Verifies NVIDIA driver and CUDA availability.
+* Sets up the virtual environment (`backend/venv`).
+* Installs PyTorch with CUDA 12 support.
+* Clones SEA-RAFT and downloads pre-trained model weights.
+* Installs backend and frontend dependencies.
 
-- **22.9% lower endpoint error** on the Spring benchmark (3.69 EPE vs RAFT's 4.78)
-- **2.3× faster inference** — critical for real-time video processing
-- **Uncertainty output** — the `info` tensor provides per-pixel flow confidence, enabling smarter anomaly weighting
+### 3. Manual Installation
 
-SEA-RAFT is loaded via `importlib` with isolated module registration in `sys.modules` to avoid namespace conflicts with our own `core/` package — a non-trivial integration challenge solved through careful module surgery.
+#### Backend
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
 
-### 2. Adaptive Baseline Learning
+# 1. Install PyTorch with CUDA 12.1
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
-Rather than hardcoded motion thresholds (which break across different cameras, resolutions, and codecs), the `BehaviorAgent` learns the statistical profile of "normal" motion from the **first 20 processed frames** of each video:
+# 2. Install dependencies
+pip install -r requirements.txt
 
-```python
-baseline_mean = p75(non_zero_magnitudes[:20_frames])
-baseline_std  = std(non_zero_magnitudes[:20_frames])
-# All thresholds expressed as: baseline_mean + N × baseline_std
+# 3. Clone SEA-RAFT (if not already present)
+git clone --depth=1 https://github.com/princeton-vl/SEA-RAFT.git sea_raft
+
+# 4. Download SEA-RAFT Tartan weights into ~/.cache/sea_raft/ and sea_raft/models/
+mkdir -p ~/.cache/sea_raft sea_raft/models
+# Download Tartan-C-T-TSKH-spring540x960-M.pth from Princeton SEA-RAFT release
+
+# 5. Configure environment variables
+cp .env.example .env
+# Edit .env and insert your free GEMINI_API_KEY from Google AI Studio:
+# GEMINI_API_KEY="AIzaSy..."
+
+# 6. Launch Backend Server
+PYTHONPATH=$PWD python main.py
+```
+* Backend API: `http://localhost:8000`
+* Swagger Interactive Docs: `http://localhost:8000/docs`
+
+#### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+* Web Dashboard: `http://localhost:5173`
+
+---
+
+## UI/UX & Themes
+
+| Feature | Dark Mode | Light Mode |
+|---|---|---|
+| **Base Surface** | `#0b0f19` (Obsidian Midnight) | `#f8fafc` (Clean Pearl Slate) |
+| **Panel Surface** | `#131b2e` (Rich Slate Card) | `#ffffff` (Elevated Pure White) |
+| **Border Tone** | `#1f2a42` (Hairline Slate) | `#e2e8f0` (Subtle Edge) |
+| **Normal Status** | `#22c55e` (Emerald Green) | `#16a34a` (Forest Green) |
+| **Alert Status** | `#ef4444` (Surveillance Crimson) | `#dc2626` (Pure Red) |
+| **Typography** | Plus Jakarta Sans + JetBrains Mono | Plus Jakarta Sans + JetBrains Mono |
+
+---
+
+## API Reference
+
+### Core Endpoints
+
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/api/upload` | Ingest video file, initiate async transcoding and multi-agent pipeline |
+| `GET` | `/api/sessions` | Retrieve all past surveillance sessions with processing state |
+| `GET` | `/api/sessions/{id}` | Status, frame counts, and metadata for a specific session |
+| `GET` | `/api/sessions/{id}/video-info` | Video streaming URL, annotated stream availability, timeline, and forensic summary |
+| `DELETE` | `/api/sessions/{id}` | Purge session, uploaded files, and database records |
+| `GET` | `/api/incidents` | Query detected behavioral anomalies (filterable by `session_id`, `severity`) |
+| `GET` | `/api/incidents/{id}` | Inspect single incident forensics and frame path |
+| `GET` | `/api/video/{session_id}` | HTML5 Range-request video stream (`?annotated=true` for live YOLO boxes) |
+| `GET` | `/api/gpu-info` | Telemetry endpoint reporting CUDA device name, VRAM, and model precisions |
+| `GET` | `/health` | Liveness healthcheck |
+
+### WebSocket Real-Time Stream
+
+Connect to `/ws/{session_id}` for live event streaming:
+```jsonc
+// Real-time analysis progress
+{ "type": "progress", "data": { "processed": 120, "total": 450, "incidents": 2, "progress_pct": 26.7 } }
+
+// Confirmed threat alert
+{ 
+  "type": "incident", 
+  "data": { 
+    "event_type": "crowd_panic", 
+    "severity": "critical", 
+    "timestamp": "00:00:53", 
+    "confidence": 0.84, 
+    "description": "Rapid outward dispersion detected exceeding 3σ baseline velocity." 
+  } 
+}
 ```
 
-This makes the system **automatically calibrate** to:
-- 320×240 low-resolution CCTV (Farneback: mean ≈ 0.32)
-- 1080p high-resolution footage (SEA-RAFT: mean ≈ 2–6)
-- Static cameras vs. PTZ cameras
-- Different video codecs (H.264, MPEG-4, FMP4)
+---
 
-The 75th percentile of non-zero pixels is used instead of the mean because SEA-RAFT produces sparse high-magnitude vectors over moving subjects against a large zero-motion background — mean magnitude gets crushed to ~0.2 by background pixels, while p75 correctly captures the ~2–6 range of actual motion.
+## Detected Anomaly Classifications
 
-### 3. Sustained Counter Architecture
+| Anomaly Class | Severity | Quantitative Trigger Condition |
+|---|---|---|
+| `crowd_panic` | 🔴 **Critical** | $\ge 4$ persons + motion magnitude $> \mu + 3\sigma$ + sudden acceleration spike |
+| `fight_or_aggression` | 🟠 **High** | Sudden velocity spike + peak magnitude $> \mu + 3\sigma$ + $\ge 2$ interacting persons |
+| `overcrowding` | 🟡 **Medium** | $\ge 10$ persons sustained for $K=5$ consecutive analyzed frames |
+| `crowd_gathering` | 🟡 **Medium** | $4 \le \text{persons} \le 9$ with low velocity ($\le \mu + 0.3\sigma$) sustained for $K=5$ frames |
+| `suspicious_loitering` | 🟢 **Low** | Single stationary subject ($< 0.8\mu$ motion) sustained over 40 frames |
 
-The `BehaviorAgent` uses per-behavior **sustained counters** instead of a vote buffer + cooldown mechanism. The original design had a fundamental conflict: cooldown timers reset the vote buffer before it could fill, producing zero detections even when anomalies were continuously present.
+---
 
-```python
-# Each behavior has an independent counter
-counters["overcrowding"] += 1   # increments each frame condition is met
-# Fires only when counter reaches SUSTAIN_FRAMES=5 (≈0.5s at FRAME_SKIP=3)
-# Counter resets after firing — natural debounce without cooldown conflict
+## IEEE Manuscript & Benchmarks
+
+This repository includes a publication-ready **two-column IEEE LaTeX manuscript** and automated benchmarking suite located in `paper/`:
+
+### Manuscript Details
+* **File**: `paper/paper.tex`
+* **Target Venues**: IEEE Transactions on Information Forensics and Security (TIFS), IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI), or IEEE AVSS.
+* **Submission Guide**: [paper/IEEE_SUBMISSION_GUIDE.md](file:///home/muhammad-usama/Desktop/PRojects/autonomous-video-surveillance-agents/paper/IEEE_SUBMISSION_GUIDE.md)
+
+### Compiling LaTeX Paper
+```bash
+cd paper
+pdflatex paper.tex
+bibtex paper
+pdflatex paper.tex
+pdflatex paper.tex
 ```
 
-### 4. Browser Video Streaming
-
-HTML5 `<video>` requires `Range` request support for seeking and duration detection. The system implements a proper streaming endpoint (`/api/video/{session_id}`) that:
-- Serves the H.264-transcoded version for browser compatibility
-- Handles `Range: bytes=X-Y` headers returning `206 Partial Content`
-- Falls back to the original file if transcoding is still in progress
+### Reproducible Benchmarking Suite
+To evaluate pipeline throughput, latency, and ablation metrics:
+```bash
+cd backend
+source venv/bin/activate
+python benchmark_evaluation.py
+```
+This generates comparative performance tables (YOLOv8m FP16 vs SEA-RAFT vs Farneback baseline) and sustains counter ablation matrices.
 
 ---
 
 ## Project Structure
 
 ```
-surveillance/
+autonomous-video-surveillance-agents/
 ├── backend/
 │   ├── agents/
-│   │   ├── vision_agent.py      # YOLOv8m · CUDA FP16 · bounding box detection
-│   │   ├── motion_agent.py      # SEA-RAFT · CUDA FP32 · adaptive p75 magnitude
-│   │   ├── behavior_agent.py    # Sustained-counter anomaly classifier
-│   │   ├── reasoning_agent.py   # Threat scoring · deduplication · report gating
-│   │   ├── report_agent.py      # Gemini 1.5 Flash · natural-language reports
-│   │   └── alert_agent.py       # WebSocket push · SMTP email · rate limiting
+│   │   ├── vision_agent.py        # YOLOv8m (FP16) · Green/Red surveillance bounding boxes
+│   │   ├── motion_agent.py        # SEA-RAFT (ECCV 2024) · Non-zero p75 flow velocity
+│   │   ├── behavior_agent.py      # Adaptive baseline (μ, σ) · Sustained counters (K=5)
+│   │   ├── reasoning_agent.py     # Multi-criteria scoring · Deduplication gating
+│   │   ├── report_agent.py        # Gemini Flash · Natural language forensic reports
+│   │   └── alert_agent.py         # Sub-second WebSocket dispatch & rate-limited SMTP
 │   ├── core/
-│   │   ├── config.py            # Pydantic-settings · .env driven
-│   │   ├── database.py          # SQLAlchemy async · SQLite ORM
-│   │   ├── pipeline.py          # CUDA-thread orchestrator · FFmpeg transcoding
-│   │   └── schemas.py           # Pydantic request/response models
-│   ├── sea_raft/                # SEA-RAFT source (git clone)
-│   │   └── core/
-│   │       ├── raft.py          # RAFT model architecture
-│   │       ├── update.py        # GRU update block
-│   │       ├── extractor.py     # ResNet feature extractor
-│   │       └── corr.py          # Correlation volume
-│   ├── main.py                  # FastAPI app · REST + WebSocket routes
-│   ├── requirements.txt
-│   └── .env.example
-└── frontend/
-    └── src/
-        ├── pages/
-        │   ├── Dashboard.jsx    # Live stats · charts · GPU monitor
-        │   ├── Upload.jsx       # Drag-drop · real-time progress feed
-        │   ├── Sessions.jsx     # Session management
-        │   ├── VideoPlayer.jsx  # Video playback · incident timeline · AI summary
-        │   └── Incidents.jsx    # Filterable incident table
-        ├── components/
-        │   ├── UI.jsx           # Design system (Panel, Badge, Button, etc.)
-        │   ├── Sidebar.jsx      # Navigation
-        │   └── IncidentCard.jsx # Incident display with frame thumbnail
-        └── hooks/
-            └── useWebSocket.js  # Real-time WebSocket hook
+│   │   ├── config.py              # Pydantic Settings · .env management
+│   │   ├── database.py            # Async SQLAlchemy + SQLite ORM
+│   │   ├── pipeline.py            # Multi-agent orchestrator & companion annotated video encoder
+│   │   └── schemas.py             # Pydantic DTO models
+│   ├── sea_raft/                  # Cloned SEA-RAFT architecture & model weights
+│   ├── benchmark_evaluation.py    # IEEE benchmark evaluation suite
+│   ├── main.py                    # FastAPI server & streaming endpoints
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── context/
+│   │   │   └── ThemeContext.jsx   # Dark / Light theme provider with persistence
+│   │   ├── components/
+│   │   │   ├── IncidentCard.jsx   # Anomaly card with red-box thumbnail badge
+│   │   │   ├── MotionActivityGauge.jsx # 3-Zone optical flow speedometer
+│   │   │   ├── MotionGuideModal.jsx    # Plain-English guide for colors & velocity
+│   │   │   ├── Sidebar.jsx        # Navigation & theme toggle
+│   │   │   └── UI.jsx             # Reusable design system tokens
+│   │   ├── pages/
+│   │   │   ├── Dashboard.jsx      # Telemetry overview & threat distribution charts
+│   │   │   ├── Incidents.jsx      # Filterable incident alert log
+│   │   │   ├── Sessions.jsx       # Video session management
+│   │   │   ├── Upload.jsx         # Video upload & real-time inference tracker
+│   │   │   └── VideoPlayer.jsx    # 3-column unified surveillance dashboard
+│   │   ├── utils/
+│   │   │   └── api.js             # API client & robust frame URL resolver
+│   │   └── index.css              # Custom HSL design tokens (Obsidian Dark / Pearl Light)
+│   └── vite.config.js
+├── paper/
+│   ├── paper.tex                  # Formal two-column IEEE LaTeX manuscript
+│   ├── references.bib             # BibTeX citations (YOLOv8, SEA-RAFT, UCF-Crime, etc.)
+│   └── IEEE_SUBMISSION_GUIDE.md   # Step-by-step submission & compilation walkthrough
+├── setup_gpu.sh                   # Automated Linux/CUDA environment installation script
+└── README.md
 ```
-
----
-
-## Installation
-
-### Prerequisites
-
-- Python 3.10+
-- Node.js 20+
-- NVIDIA GPU with CUDA 12.x *(required for SEA-RAFT and YOLOv8 acceleration)*
-- FFmpeg (`sudo apt install ffmpeg`)
-
-### 1. Clone SEA-RAFT
-
-```bash
-git clone --depth=1 https://github.com/princeton-vl/SEA-RAFT.git backend/sea_raft
-```
-
-### 2. Download SEA-RAFT Weights
-
-Download `Tartan-C-T-TSKH-spring540x960-M.pth` from the [SEA-RAFT Google Drive](https://drive.google.com/drive/folders/1YLovlvUW94vciWvTyLf-p3uWscbOQRWW):
-
-```bash
-mkdir -p backend/sea_raft/models
-mv ~/Downloads/Tartan-C-T-TSKH-spring540x960-M.pth backend/sea_raft/models/
-```
-
-### 3. Backend Setup
-
-```bash
-cd backend
-
-# Install PyTorch with CUDA 12.1 first
-pip install torch==2.3.0+cu121 torchvision==0.18.0+cu121 \
-    --index-url https://download.pytorch.org/whl/cu121
-
-# Install remaining dependencies
-pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Set GEMINI_API_KEY in .env
-# Get one free at: https://aistudio.google.com/app/apikey
-
-# Start server
-PYTHONPATH=$PWD python main.py
-# → API:    http://localhost:8000
-# → Docs:   http://localhost:8000/docs
-```
-
-### 4. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-# → UI: http://localhost:5173
-```
-
----
-
-## API Reference
-
-### REST Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/upload` | Upload video file, begin async analysis |
-| `GET` | `/api/sessions` | List all analysis sessions |
-| `GET` | `/api/sessions/{id}` | Session status and metadata |
-| `GET` | `/api/sessions/{id}/video-info` | Video URL + incident timeline + AI summary |
-| `DELETE` | `/api/sessions/{id}` | Remove session and all associated data |
-| `GET` | `/api/incidents` | List incidents (filterable by `session_id`, `severity`) |
-| `GET` | `/api/incidents/{id}` | Single incident with full description |
-| `GET` | `/api/video/{session_id}` | Stream H.264 video with Range request support |
-| `GET` | `/api/gpu-info` | GPU status, VRAM usage, model info |
-| `GET` | `/health` | Health check |
-
-### WebSocket
-
-```
-WS /ws/{session_id}
-```
-
-All messages are JSON with a `type` field:
-
-```jsonc
-// Processing progress
-{ "type": "progress", "data": { "processed": 45, "total": 456, "incidents": 3, "progress_pct": 9.8 }}
-
-// Real-time incident alert
-{ "type": "incident", "data": { "event_type": "overcrowding", "severity": "medium", "timestamp": "00:01:23", "confidence": 0.72, "description": "..." }}
-
-// Analysis complete
-{ "type": "done", "data": { "session_id": "...", "incidents": 12 }}
-
-// Pipeline error
-{ "type": "error", "data": { "session_id": "...", "message": "..." }}
-```
-
----
-
-## Configuration
-
-All settings in `backend/.env`:
-
-```bash
-# ── Core ──────────────────────────────────────────────
-GEMINI_API_KEY=your_key_here     # https://aistudio.google.com/app/apikey
-
-# ── GPU / Model ───────────────────────────────────────
-YOLO_MODEL=yolov8m.pt            # n / s / m / l / x  (n=fastest, x=best)
-CUDA_DEVICE=0                    # GPU index
-
-# ── Pipeline ──────────────────────────────────────────
-FRAME_SKIP=3                     # Process every Nth frame (3 = ~10fps at 30fps input)
-CONFIDENCE_THRESHOLD=0.5         # YOLOv8 detection confidence floor
-
-# ── Storage ───────────────────────────────────────────
-UPLOAD_DIR=uploads
-OUTPUT_DIR=outputs
-DATABASE_URL=sqlite+aiosqlite:///./surveillance.db
-
-# ── Email Alerts (optional) ───────────────────────────
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-ALERT_EMAIL=security@yourorg.com
-```
-
----
-
-## Supported Video Formats
-
-| Format | Container | Browser Playback |
-|--------|-----------|-----------------|
-| H.264 | `.mp4` | ✅ Native |
-| H.265/HEVC | `.mp4` | ✅ Auto-transcoded |
-| MPEG-4 / FMP4 | `.avi` | ✅ Auto-transcoded |
-| DivX / Xvid | `.avi` | ✅ Auto-transcoded |
-| ProRes | `.mov` | ✅ Auto-transcoded |
-| Any codec | `.mkv` | ✅ Auto-transcoded |
-
-All non-native formats are automatically transcoded to H.264 MP4 via FFmpeg on upload. AI analysis always runs on the **original full-quality file**.
-
----
-
-## Detected Anomaly Types
-
-| Event | Severity | Trigger Condition |
-|-------|----------|-------------------|
-| `crowd_panic` | 🔴 Critical | ≥4 persons + motion >3σ above baseline + sudden spike |
-| `fight_or_aggression` | 🟠 High | sudden_motion=True + max_magnitude >3σ + ≥2 persons |
-| `overcrowding` | 🟡 Medium | ≥10 persons for 5 consecutive analysed frames |
-| `crowd_gathering` | 🟡 Medium | 4–9 persons + motion <0.3σ above baseline for 5 frames |
-| `suspicious_loitering` | 🟢 Low | 1 person + motion <80% of baseline for 40 frames |
-
-All thresholds are **relative to each video's learned baseline** — the same rules work on 320×240 CCTV footage and 1080p surveillance cameras without any manual tuning.
-
----
-
-## Performance Benchmarks
-
-Measured on **NVIDIA RTX 4050 Laptop (6GB VRAM)**:
-
-| Video Resolution | FPS (Pipeline) | SEA-RAFT ms/frame | YOLOv8m ms/frame |
-|-----------------|----------------|-------------------|------------------|
-| 320×240 | ~55 | ~12ms | ~8ms |
-| 640×480 | ~45 | ~18ms | ~10ms |
-| 1280×720 | ~28 | ~28ms | ~12ms |
-| 1920×1080 | ~18 | ~42ms | ~15ms |
-
-*Pipeline FPS accounts for `FRAME_SKIP=3` — actual video processed at 1/3 of input FPS.*
-
----
-
-## Incident Report Example
-
-When an anomaly is confirmed, Gemini 1.5 Flash generates a report like:
-
-> *At timestamp 00:01:47, a group of 14 individuals was detected with motion magnitude significantly exceeding the established baseline (52.5 vs baseline 2.3), with all subjects moving rapidly in the same direction toward the east exit. The sustained nature of this movement over 5 consecutive frames, combined with the high person density, is consistent with a crowd panic or emergency evacuation scenario. Immediate security response is recommended.*
-
----
-
-## Roadmap
-
-- [ ] **RTSP live stream support** — process IP camera feeds directly
-- [ ] **Weapon detection** — custom YOLOv8 model trained on weapons dataset (Roboflow)
-- [ ] **Facial recognition** — DeepFace integration for person re-identification
-- [ ] **Crowd density heatmap** — spatial density visualisation overlay on video
-- [ ] **LSTM anomaly prediction** — predict incidents before they escalate
-- [ ] **Multi-camera grid** — simultaneous monitoring of N camera feeds
-- [ ] **PostgreSQL backend** — production-grade database for large deployments
-- [ ] **PDF report export** — downloadable incident reports per session
-- [ ] **Docker Compose** — one-command deployment with GPU passthrough
-
----
-
-## Acknowledgements
-
-- [SEA-RAFT](https://github.com/princeton-vl/SEA-RAFT) — Yihan Wang, Lahav Lipson, Jia Deng (Princeton, ECCV 2024)
-- [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) — Real-time object detection
-- [Google Gemini](https://ai.google.dev/) — Natural-language incident reporting
-- [FastAPI](https://fastapi.tiangolo.com/) — Async Python web framework
 
 ---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
-
----
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
-  <sub>Built with Python · FastAPI · React · YOLOv8 · SEA-RAFT · Gemini</sub>
+  <sub>AVSA: Autonomous Video Surveillance Agents • Built with PyTorch · Ultralytics · SEA-RAFT · Gemini · FastAPI · React</sub>
 </div>

@@ -82,3 +82,10 @@ export function formatTs(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleString()
 }
+
+export function getFrameUrl(framePath) {
+  if (!framePath) return ''
+  // Strip any leading slashes or duplicate "outputs/" prefix
+  const clean = framePath.replace(/^\/?outputs\//, '')
+  return `/outputs/${clean}`
+}

@@ -25,7 +25,15 @@ nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
 echo -e "${GREEN}✓ NVIDIA driver OK${NC}"
 
 # ── 1. CUDA ───────────────────────────────────────────────────────────────────
-echo -e "${YELLOW}[2/8] Checking CUDA 12...${NC}"
+echo -e "${YELLOW}[2/8] Checking CUDA...${NC}"
+for cuda_candidate in /usr/local/cuda /usr/local/cuda-12* /usr/local/cuda-11*; do
+    if [ -d "$cuda_candidate/bin" ]; then
+        export PATH="$cuda_candidate/bin:$PATH"
+        export LD_LIBRARY_PATH="$cuda_candidate/lib64:${LD_LIBRARY_PATH:-}"
+        break
+    fi
+done
+
 if ! command -v nvcc &> /dev/null; then
     echo -e "${RED}nvcc not found. Install CUDA 12:${NC}"
     echo "  wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
@@ -37,9 +45,10 @@ nvcc --version | head -1
 echo -e "${GREEN}✓ CUDA OK${NC}"
 
 # ── 2. Clone SEA-RAFT ─────────────────────────────────────────────────────────
-echo -e "${YELLOW}[3/8] Cloning SEA-RAFT source into backend/sea_raft/...${NC}"
-if [ ! -d "backend/sea_raft" ]; then
-    git clone https://github.com/princeton-vl/SEA-RAFT.git backend/sea_raft
+echo -e "${YELLOW}[3/8] Checking SEA-RAFT source in backend/sea_raft/...${NC}"
+if [ ! -d "backend/sea_raft/core" ]; then
+    rm -rf backend/sea_raft
+    git clone --depth=1 https://github.com/princeton-vl/SEA-RAFT.git backend/sea_raft
     echo -e "${GREEN}✓ SEA-RAFT cloned${NC}"
 else
     echo -e "${GREEN}✓ SEA-RAFT already present (skipping)${NC}"

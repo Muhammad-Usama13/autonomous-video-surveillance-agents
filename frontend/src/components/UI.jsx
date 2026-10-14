@@ -6,7 +6,7 @@ export function Panel({ children, className, ...rest }) {
   return (
     <div
       className={clsx(
-        'rounded-lg border border-[#1a2236] bg-[#0e1420] p-4',
+        'rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5 shadow-sm transition-all',
         className
       )}
       {...rest}
@@ -17,16 +17,23 @@ export function Panel({ children, className, ...rest }) {
 }
 
 // ── Section header ────────────────────────────────────────────────────────────
-export function SectionHeader({ icon, title, sub }) {
+export function SectionHeader({ icon, title, sub, action }) {
   return (
-    <div className="mb-4 flex items-center gap-3">
-      {icon && <span className="text-[var(--accent)] text-xl">{icon}</span>}
-      <div>
-        <h2 className="font-display text-xl tracking-widest text-[var(--accent)]">
-          {title}
-        </h2>
-        {sub && <p className="text-xs text-[var(--muted)] font-mono mt-0.5">{sub}</p>}
+    <div className="mb-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        {icon && (
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent-light)] text-[var(--accent)] text-lg shrink-0">
+            {icon}
+          </div>
+        )}
+        <div>
+          <h2 className="text-base font-bold tracking-tight text-[var(--text-primary)]">
+            {title}
+          </h2>
+          {sub && <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">{sub}</p>}
+        </div>
       </div>
+      {action && <div>{action}</div>}
     </div>
   )
 }
@@ -36,9 +43,10 @@ export function SeverityBadge({ severity }) {
   const color = severityColor(severity)
   return (
     <span
-      className="inline-block rounded border px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-widest"
+      className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider"
       style={{ color, borderColor: color, background: `${color}18` }}
     >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
       {severity}
     </span>
   )
@@ -51,7 +59,7 @@ export function StatusDot({ status }) {
     done:       { color: 'var(--success)', pulse: false },
     error:      { color: 'var(--danger)',  pulse: false },
   }
-  const { color, pulse } = map[status] || { color: 'var(--muted)', pulse: false }
+  const { color, pulse } = map[status] || { color: 'var(--text-muted)', pulse: false }
   return (
     <span className="relative inline-flex h-2.5 w-2.5">
       {pulse && (
@@ -72,7 +80,7 @@ export function StatusDot({ status }) {
 export function ProgressBar({ value, max = 100, color = 'var(--accent)' }) {
   const pct = Math.min(100, Math.round((value / max) * 100))
   return (
-    <div className="h-1.5 w-full rounded-full bg-[#1a2236] overflow-hidden">
+    <div className="h-2 w-full rounded-full bg-[var(--bg-surface)] border border-[var(--border)] overflow-hidden">
       <div
         className="h-full rounded-full transition-all duration-300"
         style={{ width: `${pct}%`, background: color }}
@@ -82,34 +90,45 @@ export function ProgressBar({ value, max = 100, color = 'var(--accent)' }) {
 }
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
-export function StatCard({ label, value, icon, accent = false }) {
+export function StatCard({ label, value, icon, sub, accent = false, onClick }) {
   return (
-    <Panel className={clsx('flex items-center gap-4', accent && 'border-[var(--accent)]/30')}>
+    <div
+      onClick={onClick}
+      className={clsx(
+        'rounded-xl border p-4 bg-[var(--bg-card)] transition-all shadow-sm flex items-center gap-4',
+        accent ? 'border-[var(--accent)] bg-[var(--accent-light)]' : 'border-[var(--border)]',
+        onClick && 'cursor-pointer hover:border-[var(--border-accent)] hover:shadow-md'
+      )}
+    >
       {icon && (
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg"
-          style={{ background: 'rgba(0,229,255,0.08)' }}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl"
+          style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
         >
           {icon}
         </div>
       )}
-      <div>
-        <p className="text-[11px] font-mono uppercase tracking-widest text-[var(--muted)]">{label}</p>
-        <p className={clsx('text-2xl font-display tracking-wider', accent ? 'text-[var(--accent)]' : 'text-white')}>
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)] truncate">
+          {label}
+        </p>
+        <p className="text-2xl font-bold tracking-tight text-[var(--text-primary)] mt-0.5">
           {value}
         </p>
+        {sub && <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{sub}</p>}
       </div>
-    </Panel>
+    </div>
   )
 }
 
 // ── Empty state ───────────────────────────────────────────────────────────────
-export function EmptyState({ icon = '🔍', title, sub }) {
+export function EmptyState({ icon = '🔍', title, sub, action }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center text-[var(--muted)]">
-      <span className="text-4xl opacity-40">{icon}</span>
-      <p className="font-mono text-sm">{title}</p>
-      {sub && <p className="text-xs opacity-60">{sub}</p>}
+    <div className="flex flex-col items-center justify-center gap-3 py-14 text-center">
+      <span className="text-4xl opacity-50">{icon}</span>
+      <p className="font-semibold text-sm text-[var(--text-primary)]">{title}</p>
+      {sub && <p className="text-xs text-[var(--text-muted)] max-w-sm">{sub}</p>}
+      {action && <div className="mt-2">{action}</div>}
     </div>
   )
 }
@@ -119,7 +138,7 @@ export function Spinner({ size = 20 }) {
   return (
     <svg
       width={size} height={size} viewBox="0 0 24 24" fill="none"
-      className="animate-spin"
+      className="animate-spin inline-block"
     >
       <circle cx="12" cy="12" r="10" stroke="var(--border)" strokeWidth="3" />
       <path d="M12 2a10 10 0 0 1 10 10" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" />
@@ -128,24 +147,27 @@ export function Spinner({ size = 20 }) {
 }
 
 // ── Button ────────────────────────────────────────────────────────────────────
-export function Btn({ children, onClick, variant = 'primary', disabled, className, ...rest }) {
+export function Btn({ children, onClick, variant = 'primary', disabled, className, icon, ...rest }) {
   const variants = {
-    primary: 'bg-[var(--accent)] text-[var(--surface)] hover:opacity-90',
-    ghost:   'border border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]',
+    primary: 'bg-[var(--accent)] text-white hover:opacity-90 shadow-sm',
+    secondary: 'border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[var(--border-accent)]',
+    ghost:   'border border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]',
     danger:  'border border-[var(--danger)] text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white',
+    success: 'bg-[var(--success)] text-white hover:opacity-90',
   }
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        'inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-mono font-semibold transition-all',
+        'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold tracking-wide transition-all select-none',
         variants[variant],
-        disabled && 'opacity-40 cursor-not-allowed',
+        disabled && 'opacity-40 cursor-not-allowed pointer-events-none',
         className
       )}
       {...rest}
     >
+      {icon && <span>{icon}</span>}
       {children}
     </button>
   )
